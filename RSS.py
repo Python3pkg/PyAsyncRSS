@@ -53,8 +53,9 @@ async def callback(new):
         print(item.link)
         print("-------------------")
 
-loop = asyncio.get_event_loop()
-r = RSSListener("https://www.welt.de/feeds/latest.rss", callback=callback, loop=loop)
-r = RSSListener("https://www.heise.de/newsticker/heise.rdf", callback=callback, loop=loop)
-r = RSSListener("http://www.tagesschau.de/newsticker.rdf", callback=callback, loop=loop)
-loop.run_forever()
+if __name__ == "__main__":
+    loop = asyncio.get_event_loop()
+    r = RSSListener("https://www.welt.de/feeds/latest.rss", callback=callback, loop=loop)
+    r = RSSListener("https://www.heise.de/newsticker/heise.rdf", callback=callback, loop=loop)
+    r = RSSListener("http://www.tagesschau.de/newsticker.rdf", callback=callback, loop=loop)
+    loop.run_forever()
