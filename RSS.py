@@ -1,12 +1,14 @@
 import bs4
-import requests
 import asyncio
+import aiohttp
+from concurrent.futures import ThreadPoolExecutor
 
 class RSSListener:
     def __init__(self, url, loop=None, callback=None):
         self.url = url
         self.callback = callback
         self.feed = None
+        self.p = ThreadPoolExecutor()
         if not loop:
             self.loop = asyncio.get_event_loop()
             asyncio.ensure_future(self.listen(), loop=self.loop)
@@ -16,8 +18,9 @@ class RSSListener:
             asyncio.ensure_future(self.listen(), loop=self.loop)
 
     async def listen(self):
-        r = requests.get(self.url)
-        feed = Feed(r.content.decode())
+        async with aiohttp.ClientSession(loop=self.loop) as session:
+            async with session.get(self.url) as r:
+                feed = Feed(await r.text())
         if self.feed and self.diff(feed, self.feed) and callable(self.callback):
             asyncio.run_coroutine_threadsafe(self.callback(self.diff(feed, self.feed)), self.loop)
         self.feed = feed
