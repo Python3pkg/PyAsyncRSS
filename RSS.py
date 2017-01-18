@@ -2,7 +2,6 @@ import bs4
 import requests
 import asyncio
 
-
 class RSSListener:
     def __init__(self, url, loop=None, callback=None):
         self.url = url
