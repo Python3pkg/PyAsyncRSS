@@ -1,14 +1,12 @@
 import bs4
 import asyncio
 import aiohttp
-from concurrent.futures import ThreadPoolExecutor
 
 class RSSListener:
     def __init__(self, url, loop=None, callback=None):
         self.url = url
         self.callback = callback
         self.feed = None
-        self.p = ThreadPoolExecutor()
         if not loop:
             self.loop = asyncio.get_event_loop()
             asyncio.ensure_future(self.listen(), loop=self.loop)
