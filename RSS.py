@@ -22,10 +22,11 @@ class RSSListener:
             async with session.get(self.url) as r:
                 feed = Feed(await r.text())
         if self.feed and self.diff(feed, self.feed) and callable(self.callback):
-            asyncio.run_coroutine_threadsafe(self.callback(self.diff(feed, self.feed)), self.loop)
-        self.feed = feed
+            print("------------------------------------------------------------")
+            d = self.diff(feed, self.feed)
+            self.feed = feed
+            asyncio.run_coroutine_threadsafe(self.callback(d), self.loop)
         asyncio.ensure_future(self.listen(), loop=self.loop)
-
     def diff(self, feed1, feed2):
         out = []
         items2 = [item.attrs for item in feed2.items]
@@ -61,4 +62,7 @@ if __name__ == "__main__":
     r = RSSListener("https://www.welt.de/feeds/latest.rss", callback=callback, loop=loop)
     r = RSSListener("https://www.heise.de/newsticker/heise.rdf", callback=callback, loop=loop)
     r = RSSListener("http://www.tagesschau.de/newsticker.rdf", callback=callback, loop=loop)
+    r = RSSListener("http://www.gamespot.com/feeds/reviews/", callback=callback, loop=loop)
+    r = RSSListener("http://www.gamespot.com/feeds/new-games/", callback=callback, loop=loop)
+    r = RSSListener("http://www.gamespot.com/feeds/news/", callback=callback, loop=loop)
     loop.run_forever()
