@@ -23,6 +23,7 @@ class RSSListener:
         self.feed = None
         self.hashes = set()
         self.interval = interval
+        self.run = True
         if not loop:
             self.loop = loop
             asyncio.ensure_future(self.listen(), loop=self.loop)
@@ -30,6 +31,16 @@ class RSSListener:
         elif loop:
             self.loop = loop
             asyncio.ensure_future(self.listen(), loop=self.loop)
+
+    def stop(self):
+        self.run = False
+
+    def start(self):
+        """
+        Don't do start() at initialization. Use it if you did stop() and want to continue!
+        """
+        self.run = True
+        asyncio.ensure_future(self.listen(), loop=self.loop)
 
     async def listen(self):
         async with aiohttp.ClientSession(loop=self.loop) as session:
@@ -41,8 +52,9 @@ class RSSListener:
         if self.feed and diff and callable(self.callback): asyncio.ensure_future(self.callback(diff, feed),
                                                                                  loop=self.loop)
         self.feed = feed
-        await asyncio.sleep(self.interval)
-        await self.listen()
+        if self.run:
+            await asyncio.sleep(self.interval)
+            await self.listen()
 
     def diff(self, feed):
         for item in feed.items:
