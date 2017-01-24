@@ -1,8 +1,8 @@
 import feedparser
-import requests
 import asyncio
 import aiohttp
 import hashlib
+
 
 class RSSListener:
     def __init__(self, url, loop=None, callback=None):
@@ -23,12 +23,13 @@ class RSSListener:
         async with aiohttp.ClientSession(loop=self.loop) as session:
             async with session.get(self.url) as r:
                 feed = Feed(await r.text())
+        await asyncio.sleep(1)
+        diff = list(self.diff(feed))
         for item in feed.items:
             self.hashes.add(item.hash)
-        diff = list(self.diff(feed))
         if self.feed and diff and callable(self.callback): asyncio.ensure_future(self.callback(diff, feed), loop=self.loop)
         self.feed = feed
-        asyncio.ensure_future(self.listen(), loop=self.loop)
+        await self.listen()
 
     def diff(self, feed):
         for item in feed.items:
@@ -47,22 +48,24 @@ class Item:
         self.title = self.dict.get("title", None)
         self.link = self.dict.get("link", None)
         self.description = self.dict.get("description", None)
-        self.hash = hashlib.md5(str(self.title).encode()+str(self.link).encode()+str(self.description).encode())
+        self.hash = hashlib.md5(str(self.title).encode()+str(self.link).encode()+str(self.description).encode()).digest()
 
 async def callback(new, feed):
-    print("-------------------------------")
-    print(new.title)
-    print(new.description)
-    print(new.link)
+    for item in new:
+        print("-------------------------------")
+        print(item.title)
+        print(item.description)
+        print(item.link)
 
-loop = asyncio.get_event_loop()
-RSSListener("https://www.welt.de/feeds/latest.rss", callback=callback, loop=loop)
-RSSListener("https://www.heise.de/newsticker/heise.rdf", callback=callback, loop=loop)
-RSSListener("http://www.tagesschau.de/newsticker.rdf", callback=callback, loop=loop)
-RSSListener("http://www.gamespot.com/feeds/reviews/", callback=callback, loop=loop)
-RSSListener("http://www.gamespot.com/feeds/new-games/", callback=callback, loop=loop)
-RSSListener("http://www.gamespot.com/feeds/news/", callback=callback, loop=loop)
-RSSListener("http://rss.nytimes.com/services/xml/rss/nyt/World.xml", callback=callback, loop=loop)
-RSSListener("http://rss.focus.de/fol/XML/rss_folnews_eilmeldungen.xml", callback=callback, loop=loop)
-RSSListener("http://rss.focus.de/fol/XML/rss_folnews.xml", callback=callback, loop=loop)
-loop.run_forever()
+if __name__ == "__main__":
+    loop = asyncio.get_event_loop()
+    RSSListener("https://www.welt.de/feeds/latest.rss", callback=callback, loop=loop)
+    RSSListener("https://www.heise.de/newsticker/heise.rdf", callback=callback, loop=loop)
+    RSSListener("http://www.tagesschau.de/newsticker.rdf", callback=callback, loop=loop)
+    RSSListener("http://www.gamespot.com/feeds/reviews/", callback=callback, loop=loop)
+    RSSListener("http://www.gamespot.com/feeds/new-games/", callback=callback, loop=loop)
+    RSSListener("http://www.gamespot.com/feeds/news/", callback=callback, loop=loop)
+    RSSListener("http://rss.nytimes.com/services/xml/rss/nyt/World.xml", callback=callback, loop=loop)
+    RSSListener("http://rss.focus.de/fol/XML/rss_folnews_eilmeldungen.xml", callback=callback, loop=loop)
+    RSSListener("http://rss.focus.de/fol/XML/rss_folnews.xml", callback=callback, loop=loop)
+    loop.run_forever()
