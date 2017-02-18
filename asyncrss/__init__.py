@@ -88,25 +88,3 @@ class Item:
         self.description = self.dict.get("description", None)
         self.hash = hashlib.md5(
             str(self.title).encode() + str(self.link).encode() + str(self.description).encode()).digest()
-
-
-async def callback(new, feed):
-    for item in new:
-        print("-------------------------------")
-        print(item.title)
-        print(item.description)
-        print(item.link)
-
-
-if __name__ == "__main__":
-    loop = asyncio.get_event_loop()
-    RSSListener("https://www.welt.de/feeds/latest.rss", callback=callback, loop=loop)
-    RSSListener("https://www.heise.de/newsticker/heise.rdf", callback=callback, loop=loop)
-    RSSListener("http://www.tagesschau.de/newsticker.rdf", callback=callback, loop=loop)
-    RSSListener("http://www.gamespot.com/feeds/reviews/", callback=callback, loop=loop)
-    RSSListener("http://www.gamespot.com/feeds/new-games/", callback=callback, loop=loop)
-    RSSListener("http://www.gamespot.com/feeds/news/", callback=callback, loop=loop)
-    RSSListener("http://rss.nytimes.com/services/xml/rss/nyt/World.xml", callback=callback, loop=loop)
-    RSSListener("http://rss.focus.de/fol/XML/rss_folnews_eilmeldungen.xml", callback=callback, loop=loop)
-    RSSListener("http://rss.focus.de/fol/XML/rss_folnews.xml", callback=callback, loop=loop)
-    loop.run_forever()
